@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b1020" />
+  <title>World Economy Time Machine</title>
+  <meta name="description" content="1960年から現在まで、世界経済を地図・ランキング・国別チャートで旅するインタラクティブ学習アプリ。" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">◎</div>
+        <div>
+          <p class="eyebrow">WORLD ECONOMY TIME MACHINE</p>
+          <h1>世界経済を、時間で旅する。</h1>
+        </div>
+      </div>
+      <div class="top-actions">
+        <span id="sourceBadge" class="source-badge">DATA: loading…</span>
+        <button id="refreshBtn" class="ghost-btn" type="button">データ再読込</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="time-console panel">
+        <div class="time-main">
+          <div>
+            <p class="section-kicker">TIME CONTROL</p>
+            <div class="year-row">
+              <button id="prevYearBtn" class="round-btn" type="button" aria-label="前年">←</button>
+              <output id="yearOutput" class="year-display" for="yearSlider">2023</output>
+              <button id="nextYearBtn" class="round-btn" type="button" aria-label="翌年">→</button>
+            </div>
+          </div>
+          <button id="playBtn" class="play-btn" type="button"><span aria-hidden="true">▶</span> 時間を再生</button>
+        </div>
+        <input id="yearSlider" class="year-slider" type="range" min="1960" max="2024" value="2023" step="1" aria-label="表示する年" />
+        <div id="yearTicks" class="year-ticks" aria-hidden="true"></div>
+        <div id="eventStrip" class="event-strip" aria-label="経済史イベント"></div>
+      </section>
+
+      <section class="indicator-strip" aria-label="指標選択">
+        <button class="indicator-btn active" data-indicator="NY.GDP.MKTP.CD" type="button">GDP</button>
+        <button class="indicator-btn" data-indicator="NY.GDP.MKTP.KD.ZG" type="button">成長率</button>
+        <button class="indicator-btn" data-indicator="NY.GDP.PCAP.CD" type="button">1人GDP</button>
+        <button class="indicator-btn" data-indicator="SP.POP.TOTL" type="button">人口</button>
+        <button class="indicator-btn" data-indicator="FP.CPI.TOTL.ZG" type="button">インフレ</button>
+      </section>
+
+      <section class="hero-grid">
+        <article class="map-panel panel">
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">WORLD MAP</p>
+              <h2 id="mapTitle">GDP — 2023</h2>
+            </div>
+            <div class="legend-wrap">
+              <span id="legendMin">小</span>
+              <div class="legend-bar" aria-hidden="true"></div>
+              <span id="legendMax">大</span>
+            </div>
+          </div>
+          <div id="mapStatus" class="status-line" aria-live="polite">世界地図を読み込み中…</div>
+          <div class="map-stage">
+            <svg id="worldMap" viewBox="0 0 1000 510" role="img" aria-label="世界経済の色分け地図"></svg>
+            <div id="mapHover" class="map-hover" hidden></div>
+          </div>
+          <p class="map-note">国をクリックすると、その国の長期推移を表示します。色は選択中の指標に応じた相対値です。</p>
+        </article>
+
+        <aside class="summary-column">
+          <article class="panel stat-panel">
+            <p class="section-kicker">WORLD SNAPSHOT</p>
+            <h2 id="snapshotYear">2023</h2>
+            <div class="big-stat">
+              <span id="snapshotLabel">世界GDP</span>
+              <strong id="snapshotValue">—</strong>
+            </div>
+            <div class="mini-stats">
+              <div><span>データあり</span><strong id="countryCount">—</strong></div>
+              <div><span>中央値</span><strong id="medianValue">—</strong></div>
+            </div>
+          </article>
+
+          <article class="panel ranking-panel">
+            <div class="panel-heading compact">
+              <div>
+                <p class="section-kicker">TOP 10</p>
+                <h2 id="rankingTitle">GDPランキング</h2>
+              </div>
+            </div>
+            <ol id="rankingList" class="ranking-list"></ol>
+          </article>
+        </aside>
+      </section>
+
+      <section class="lower-grid">
+        <article class="panel country-panel">
+          <div class="panel-heading country-heading">
+            <div>
+              <p class="section-kicker">COUNTRY STORY</p>
+              <h2><span id="countryFlag">🇯🇵</span> <span id="countryName">日本</span></h2>
+            </div>
+            <select id="countrySelect" aria-label="国を選択"></select>
+          </div>
+          <div class="country-metrics">
+            <div><span id="countryMetricLabel">GDP</span><strong id="countryMetricValue">—</strong></div>
+            <div><span>世界順位</span><strong id="countryRank">—</strong></div>
+            <div><span>前年差</span><strong id="countryDelta">—</strong></div>
+          </div>
+          <div class="chart-wrap">
+            <svg id="countryChart" viewBox="0 0 820 250" role="img" aria-label="選択国の長期推移チャート"></svg>
+          </div>
+          <p id="countryChartNote" class="map-note">1960年以降の推移。欠損年は線をつなぎません。</p>
+        </article>
+
+        <article class="panel compare-panel">
+          <div class="panel-heading compact">
+            <div>
+              <p class="section-kicker">COMPARE</p>
+              <h2>2か国を比較</h2>
+            </div>
+          </div>
+          <div class="compare-controls">
+            <select id="compareA" aria-label="比較する国A"></select>
+            <span>vs</span>
+            <select id="compareB" aria-label="比較する国B"></select>
+          </div>
+          <div class="chart-wrap compare-chart-wrap">
+            <svg id="compareChart" viewBox="0 0 820 250" role="img" aria-label="2か国比較チャート"></svg>
+          </div>
+          <div id="compareLegend" class="compare-legend"></div>
+        </article>
+      </section>
+
+      <section class="panel history-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-kicker">WHAT HAPPENED?</p>
+            <h2 id="historyTitle">経済史をデータと一緒に見る</h2>
+          </div>
+          <button id="jumpEventBtn" class="ghost-btn" type="button">次のイベントへ</button>
+        </div>
+        <div id="historyCard" class="history-card"></div>
+      </section>
+
+      <section class="panel about-panel">
+        <p class="section-kicker">ABOUT THE DATA</p>
+        <h2>数字を「物語」にしすぎない。</h2>
+        <p>GDP・人口・成長率などは、国の一面を示す指標です。このアプリは長期変化を探索する学習用ツールで、単一指標だけで国の豊かさや政策の良し悪しを判断しません。経済史イベントは背景理解のための注釈で、因果関係を断定するものではありません。</p>
+        <div class="about-links">
+          <a href="https://datahelpdesk.worldbank.org/knowledgebase/topics/125589-developer-information" target="_blank" rel="noreferrer">World Bank Indicators API ↗</a>
+          <a href="README.md">このアプリの仕組み</a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>WORLD ECONOMY TIME MACHINE</span>
+      <span id="footerStatus">GitHub Pages + World Bank Open Data</span>
+    </footer>
+  </div>
+
+  <script src="js/app.js" defer></script>
+</body>
+</html>
